@@ -1,0 +1,20 @@
+.count-container{
+    width: 300px;
+    height: 180px;
+    margin: auto;
+    border: 1px solid black;
+    text-align: center;
+    line-height: 180px;
+    font-size: 42px;
+}
+
+.count{
+    width: 80px;
+    margin: auto;
+    display: block;
+    margin-top: 10px;
+}
+
+a{
+    text-decoration: none;
+}
