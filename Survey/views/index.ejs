@@ -4,31 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type ="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type ="text/javascript">
+        $(document).ready(function (){
+            var socket  = io.connect();
+            $('form').submit(function(e){
+                e.preventDefault();
+                socket.emit("survey_submitted", { message : {name : $('#name').val(), location: $('#loc').val(), language: $('#lang').val(), comment: $('#comment').val()}});
+                $('#name').val("");
+                $('#loc').val("");
+                $('#lang').val("");
+                $('#comment').val("");
+                $('#response').addClass('green-guy');
+            });
+            socket.on( 'server_response', function (data){
+                $('#response').html("<p>" + data.response + "</p><p>" + data.lucky_num + "</p>");
+            });
+        });
+    </script> 
     <title>Survey Form</title>
   </head>
   <body>
+    <div id="response"></div>
     <div class='format'>
         <form method='post' action='/process'>
             <label for='name'>Your Name:</label>
-            <input type='text' name='name'>
+            <input type='text' id='name' name='name'>
             <label for='loc'>Location:</label>
-            <select name='loc'>
-                <option> - Select - </option>
+            <select name='loc' id='loc'>
+                <option value=""> - Select - </option>
                 <option value='Mountain View'>Mountain View, CA</option>
                 <option value='Chicago'>Chicago, IL</option>
                 <option value='Seattle'>Seattle, WA</option>
                 <option value='New York'>New York, NY</option>
             </select>
             <label for='lang'>Favorite Language: </label>
-            <select name='lang'>
-                <option> - Select - </option>
+            <select name='lang' id='lang'>
+                <option value=""> - Select - </option>
                 <option value='JavaScript'>JavaScript</option>
                 <option value='Python'>Python</option>
                 <option value='Ruby'>Ruby</option>
                 <option value='C#'>C#</option>
             </select>
             <label for='comment'>Comments(optional): </label>
-            <textarea name='comment'></textarea>
+            <textarea name='comment' id='comment'></textarea>
             <input type='submit' value='Submit'>
         </form>
     </div>
