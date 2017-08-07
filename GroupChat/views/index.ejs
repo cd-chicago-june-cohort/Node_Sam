@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type ="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type ="text/javascript">
+
+        $(document).ready(function (){
+            var exit = false;
+            var exit_count = 0;
+            var socket  = io.connect();
+            var result = prompt("What's your name?");
+
+            var scrolled = false;
+            updateScroll();
+            function updateScroll(){
+                if(!scrolled){
+                    var element = document.getElementById("convo");
+                    element.scrollTop = element.scrollHeight;
+                }
+            }
+
+            $(document).on('scroll', '#convo',function(){
+                scrolled = true;
+            });
+
+            $('#user').text("Welcome, " + result);
+            socket.emit('new_user', {user: result});
+            socket.on('enter_user', function(data){
+                $('#convo').append("<p>" + data.user + " has entered the chat room.</p>");
+                updateScroll();
+            });
+            $('#msg-form').submit(function(event){
+                event.preventDefault();
+                var message = $('#msg').val();
+                $('#msg').val("");
+                socket.emit('new_message', {message: message, speaker: result});
+            });
+            socket.on('show_message', function(data){
+                $('#convo').append("<p>" + data.speaker + data.new_msg + "</p>");
+                updateScroll();
+            });
+            window.onbeforeunload = exitChat;
+            function exitChat(){
+                socket.emit('leave_chat', {user: result, exit_count: exit_count});
+                socket.on('show_leave', function (data){
+                    if (data.exit_count == 2){
+                        $('#convo').append("<p>" + data.user + " has left the chat room.</p>");
+                        socket.emit("reset");
+                        updateScroll();
+                    }
+                });
+            }
+            exitChat();
+        });
+    </script> 
+    <title>Survey Form</title>
+  </head>
+  <body>
+      <div id='container'>
+        <h3>Conversation Board:</h3>
+        <div id='user'></div>
+        <div id='convo'>
+            <% for (var x in chats) { %>
+                <p><%= chats[x].speaker%> <%=chats[x].content%></p>
+            <% } %>
+        </div>
+        <form id='msg-form'>
+            <textarea id='msg'></textarea>
+            <input type='submit' id='send' value="Send it!">
+        </form>
+      </div>
+  </body>
+</html>
